@@ -22,27 +22,37 @@ class PreparationVisualisedData:
         self.alpha_in = self.input_data['alpha']
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
         self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
+        self.output_file_name_object = 'graph.png'
 
-    def __call__(self, output_file_name_object: str) -> None:
+    def __call__(self) -> None:
         if self.input_data['chart_type'] == 'bar':
-            processed_data = processing_Method.bar(pd.read_csv(self.input_data['file']),
-                                                   self.input_data['column_x'],
-                                                   self.input_data['column_y'],
-                                                   self.input_data['agg'])
-            self.ax.bar(processed_data[self.input_data['column_x']],
-                        processed_data[self.input_data['column_y']])
+            self._bar()
         elif self.input_data['chart_type'] == 'hist':
-            processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
-                                                    self.input_data['column_x'])
-            self.ax.hist(processed_data)
+            self._hist()
         elif self.input_data['chart_type'] == 'scatter':
-            processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
-                                                       self.input_data['column_x'],
-                                                       self.input_data['column_y'])
-            self.ax.scatter(processed_data[self.input_data['column_x']],
-                            processed_data[self.input_data['column_y']])
+            self._scatter()
 
-        self.func(output_file_name_object, self.fig, self.alpha_in)
+        self.func(self.output_file_name_object, self.fig, self.alpha_in)
+
+    def _bar(self) -> None:
+        processed_data = processing_Method.bar(pd.read_csv(self.input_data['file']),
+                                               self.input_data['column_x'],
+                                               self.input_data['column_y'],
+                                               self.input_data['agg'])
+        self.ax.bar(processed_data[self.input_data['column_x']],
+                    processed_data[self.input_data['column_y']])
+
+    def _hist(self) -> None:
+        processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
+                                                self.input_data['column_x'])
+        self.ax.hist(processed_data)
+
+    def _scatter(self) -> None:
+        processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
+                                                   self.input_data['column_x'],
+                                                   self.input_data['column_y'])
+        self.ax.scatter(processed_data[self.input_data['column_x']],
+                        processed_data[self.input_data['column_y']])
 
 
 @PreparationVisualisedData
@@ -52,4 +62,4 @@ def Save_and_Visualised_Data(output_file_name_object, fig, alpha_in) -> Any:
     fig.savefig(output_file_name_object)
 
 
-Save_and_Visualised_Data('graph.png')
+Save_and_Visualised_Data()
