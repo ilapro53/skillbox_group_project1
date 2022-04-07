@@ -40,7 +40,6 @@ class InputData:
         else:
             raise FileExistsError('Файла {} не найдено'.format(mpi_file))
 
-
     def __call__(self) -> dict:
         # Спрашиваем тип графика
         print(
@@ -258,10 +257,3 @@ class InputData:
 
         output_data['alpha'] = self.__input_alpha()
         return output_data
-
-
-if __name__ == '__main__':
-
-    loans = 'kiva_loans.csv'
-    mpi = 'kiva_mpi_region_locations.csv'
-    result_InputData = InputData(loans, mpi)

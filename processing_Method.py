@@ -52,11 +52,9 @@ def bar(data, col_of_categorias: Any, col_for_agg: Any, agg) -> Optional[Any]:
     try:
         if int(agg) in list(range(0, 6)):
             df = data[[col_of_categorias, col_for_agg]]
-
             if agg < 4:
                 if not check_data(df[col_for_agg]):
                     return
-
             df = dropna(df)
             if agg == 1:
                 df = df.groupby(col_of_categorias)[col_for_agg].mean()
@@ -71,11 +69,9 @@ def bar(data, col_of_categorias: Any, col_for_agg: Any, agg) -> Optional[Any]:
             elif agg == 0:
                 pass
             return df
-
         else:
             print('Неверный запрос для агрегация')
-
-    except:
+    except TypeError:
         print('Неверный запрос для агрегация')
 
 
