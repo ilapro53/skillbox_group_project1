@@ -21,7 +21,6 @@ class PreparationVisualisedData:
         mpi = 'kiva_mpi_region_locations.csv'
         self.input_data: dict = input_Class.InputData(loans, mpi)()
         self.fig, self.ax = plt.subplots(figsize=(15, 8))
-        self.alpha_in = self.input_data['alpha']
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
         self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
         self.output_file_name_object = 'graph.png'
@@ -34,7 +33,7 @@ class PreparationVisualisedData:
         elif self.input_data['chart_type'] == 'scatter':
             self._scatter()
 
-        self.func(self.output_file_name_object, self.fig, self.alpha_in)
+        self.func(self.output_file_name_object, self.fig)
 
     def _bar(self) -> None:
         processed_data = processing_Method.bar(pd.read_csv(self.input_data['file']),
@@ -48,8 +47,7 @@ class PreparationVisualisedData:
     def _hist(self) -> None:
         processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
                                                 self.input_data['column_x'])
-        self.ax.hist(processed_data,
-                     alpha=self.input_data['alpha'])
+        self.ax.hist(processed_data, alpha=self.input_data['alpha'])
 
     def _scatter(self) -> None:
         processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
@@ -62,7 +60,7 @@ class PreparationVisualisedData:
 
 @PreparationVisualisedData
 # Отрисовка и сохранение графика в формате .png
-def Save_and_Visualised_Data(output_file_name_object, fig, alpha_in) -> Any:
+def Save_and_Visualised_Data(output_file_name_object, fig) -> Any:
     plt.show()
     fig.savefig(output_file_name_object)
 
