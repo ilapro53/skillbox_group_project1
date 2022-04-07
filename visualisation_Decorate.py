@@ -22,7 +22,10 @@ class PreparationVisualisedData:
         self.input_data: dict = input_Class.InputData(loans, mpi)()
         self.fig, self.ax = plt.subplots(figsize=(15, 8))
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
-        self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
+
+        if self.input_data['chart_type'] != 'hist':
+            self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
+
         self.output_file_name_object = 'graph.png'
 
     def __call__(self) -> None:
