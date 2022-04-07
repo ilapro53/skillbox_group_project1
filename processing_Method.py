@@ -43,9 +43,9 @@ def bar(data, col_of_categorias, col_for_agg, agg):
     # 1 - среднее, 2 - медиана, 3 - мода, 4 - количество, 5 - количество уникальных значений
     # col_for_agg - название колонки для агрегации
     # col_of_categorias - колонка с категориями
-    if find_column(data, col_for_agg) == False:
+    if not find_column(data, col_for_agg):
         return print('Колонка {} не существует'.format(col_for_agg))
-    if find_column(data, col_of_categorias) == False:
+    if not find_column(data, col_of_categorias):
         return print('Колонка {} не существует'.format(col_of_categorias))
     try:
         if int(agg) in list(range(0, 6)):
@@ -55,7 +55,7 @@ def bar(data, col_of_categorias, col_for_agg, agg):
     except:
         return print('Неверный запрос для агрегация')
     if agg < 4:
-        if check_data(df[col_for_agg]) == False:
+        if not check_data(df[col_for_agg]):
             return
     df = dropna(df)
     if agg == 1:
@@ -77,10 +77,10 @@ def hist(data, column):
     # функция обрабатывает/преобразовывает данные для создания гистограммы
     # data - датафрейм
     # column - название колонки, запрос в первом классе
-    if find_column(data, column) == False:
+    if not find_column(data, column):
         return print('Колонка {} не существует'.format(column))
     serie = data[column]
-    if check_data(serie) == False:
+    if not check_data(serie):
         return print('Неверный формат данных')
     serie = dropna(serie).reset_index()
     serie = outlier(serie, column)
@@ -90,12 +90,12 @@ def hist(data, column):
 def scatter(data, column_1, column_2):
     # функция обрабатывает/преобразовывает данные для создания точечной диаграммы
     # column_outl - колонка для отсеивания выбросов
-    if find_column(data, column_1) == False:
+    if not find_column(data, column_1):
         return print('Колонка {} не существует'.format(column_1))
-    if find_column(data, column_2) == False:
+    if not find_column(data, column_2):
         return print('Колонка {} не существует'.format(column_2))
     df = data[[column_1, column_2]]
-    if check_data(df[column_1]) == False or check_data(df[column_2]) == False:
+    if not check_data(df[column_1]) or not check_data(df[column_2]):
         return
     df = dropna(df)
     return df
