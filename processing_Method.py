@@ -1,8 +1,10 @@
+from typing import Any, Optional
+
 import pandas as pd
 import numpy as np
 
 
-def find_column(data, column):
+def find_column(data, column: Any) -> bool:
     # функция, которая проверяет существует ли искомый столбец в заданном датафрейме
     if column in data.columns:
         return True
@@ -10,7 +12,7 @@ def find_column(data, column):
         return False
 
 
-def check_data(series_for_checking):
+def check_data(series_for_checking: Any) -> bool:
     # функция устанавливает/преобразовывает тип данных существующего столбца данных в тип float
     try:
         series_for_checking = series_for_checking.astype(float)
@@ -20,12 +22,12 @@ def check_data(series_for_checking):
     return True
 
 
-def dropna(series_for_cleaning):
+def dropna(series_for_cleaning) -> Any:
     # функция удаляет строки с нулевыми значениями
     return series_for_cleaning.dropna()
 
 
-def outlier(series_q, column):
+def outlier(series_q: Any, column: Any) -> Any:
     # функция для отсеивания выбросов (правило 3х Сигм)
     series_q = series_q.reset_index()
     q75, q25 = np.percentile(series_q[column], [75, 25])
@@ -37,25 +39,25 @@ def outlier(series_q, column):
     return data_99_perc
 
 
-def bar(data, col_of_categorias, col_for_agg, agg):
+def bar(data, col_of_categorias: Any, col_for_agg: Any, agg: {__lt__, __eq__}) -> Optional[Any]:
     # функция обрабатывает/преобразовывает данные для создания столбчатой диаграммы
     # agg - хранит число от 1 до 5, где
     # 1 - среднее, 2 - медиана, 3 - мода, 4 - количество, 5 - количество уникальных значений
     # col_for_agg - название колонки для агрегации
     # col_of_categorias - колонка с категориями
-    if not find_column(data, col_for_agg):
-        return print('Колонка {} не существует'.format(col_for_agg))
-    if not find_column(data, col_of_categorias):
-        return print('Колонка {} не существует'.format(col_of_categorias))
+    if find_column(data, col_for_agg) is False:
+        print('Колонка {} не существует'.format(col_for_agg))
+    if find_column(data, col_of_categorias) is False:
+        print('Колонка {} не существует'.format(col_of_categorias))
     try:
         if int(agg) in list(range(0, 6)):
             df = data[[col_of_categorias, col_for_agg]]
         else:
-            return print('Неверный запрос для агрегация')
+            print('Неверный запрос для агрегация')
     except:
-        return print('Неверный запрос для агрегация')
+        print('Неверный запрос для агрегация')
     if agg < 4:
-        if not check_data(df[col_for_agg]):
+        if check_data(df[col_for_agg]) is False:
             return
     df = dropna(df)
     if agg == 1:
@@ -73,29 +75,29 @@ def bar(data, col_of_categorias, col_for_agg, agg):
     return df
 
 
-def hist(data, column):
+def hist(data, column: Any) -> Optional[Any]:
     # функция обрабатывает/преобразовывает данные для создания гистограммы
     # data - датафрейм
     # column - название колонки, запрос в первом классе
-    if not find_column(data, column):
-        return print('Колонка {} не существует'.format(column))
+    if find_column(data, column) is False:
+        print('Колонка {} не существует'.format(column))
     serie = data[column]
-    if not check_data(serie):
-        return print('Неверный формат данных')
+    if check_data(serie) is False:
+        print('Неверный формат данных')
     serie = dropna(serie).reset_index()
     serie = outlier(serie, column)
     return serie[column]
 
 
-def scatter(data, column_1, column_2):
+def scatter(data, column_1: Any, column_2: Any) -> Optional[Any]:
     # функция обрабатывает/преобразовывает данные для создания точечной диаграммы
     # column_outl - колонка для отсеивания выбросов
-    if not find_column(data, column_1):
-        return print('Колонка {} не существует'.format(column_1))
-    if not find_column(data, column_2):
-        return print('Колонка {} не существует'.format(column_2))
+    if find_column(data, column_1) is False:
+        print('Колонка {} не существует'.format(column_1))
+    if find_column(data, column_2) is False:
+        print('Колонка {} не существует'.format(column_2))
     df = data[[column_1, column_2]]
-    if not check_data(df[column_1]) or not check_data(df[column_2]):
+    if check_data(df[column_1]) is False or check_data(df[column_2]) is False:
         return
     df = dropna(df)
     return df
