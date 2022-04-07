@@ -17,7 +17,9 @@ class PreparationVisualisedData:
 
     def __init__(self, func: Any) -> None:
         self.func: Any = func
-        self.input_data: dict = input_Class.result_InputData
+        loans = 'kiva_loans.csv'
+        mpi = 'kiva_mpi_region_locations.csv'
+        self.input_data: dict = input_Class.InputData(loans, mpi)()
         self.fig, self.ax = plt.subplots(figsize=(15, 8))
         self.alpha_in = self.input_data['alpha']
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
@@ -40,25 +42,28 @@ class PreparationVisualisedData:
                                                self.input_data['column_y'],
                                                self.input_data['agg'])
         self.ax.bar(processed_data[self.input_data['column_x']],
-                    processed_data[self.input_data['column_y']])
+                    processed_data[self.input_data['column_y']],
+                    alpha=self.input_data['alpha'])
 
     def _hist(self) -> None:
         processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
                                                 self.input_data['column_x'])
-        self.ax.hist(processed_data)
+        self.ax.hist(processed_data,
+                     alpha=self.input_data['alpha'])
 
     def _scatter(self) -> None:
         processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
                                                    self.input_data['column_x'],
                                                    self.input_data['column_y'])
         self.ax.scatter(processed_data[self.input_data['column_x']],
-                        processed_data[self.input_data['column_y']])
+                        processed_data[self.input_data['column_y']],
+                        alpha=self.input_data['alpha'])
 
 
 @PreparationVisualisedData
 # Отрисовка и сохранение графика в формате .png
 def Save_and_Visualised_Data(output_file_name_object, fig, alpha_in) -> Any:
-    plt.show(alpha=alpha_in)
+    plt.show()
     fig.savefig(output_file_name_object)
 
 

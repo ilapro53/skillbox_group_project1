@@ -27,7 +27,6 @@ class InputData:
         """
 
     def __init__(self, loans_file: str, mpi_file: str) -> None:
-        self.output_data = None
 
         # Проверяем наличие файла loans
         if os.path.exists(loans_file):
@@ -41,6 +40,8 @@ class InputData:
         else:
             raise FileExistsError('Файла {} не найдено'.format(mpi_file))
 
+
+    def __call__(self) -> dict:
         # Спрашиваем тип графика
         print(
             "1 - Столбчатая диаграмма\n"
@@ -61,13 +62,13 @@ class InputData:
                       'который нужно построить')
 
         if '1' == reply:
-            self.output_data = self.bar_plot()
+            return self.bar_plot()
 
         elif '2' == reply:
-            self.output_data = self.hist_plot()
+            return self.hist_plot()
 
         elif '3' == reply:
-            self.output_data = self.scatter_plot()
+            return self.scatter_plot()
 
     def __input_file(self) -> str:
         print('\n1 - {}'.format(self.loans_path),
@@ -259,6 +260,8 @@ class InputData:
         return output_data
 
 
-loans = 'kiva_loans.csv'
-mpi = 'kiva_mpi_region_locations.csv'
-result_InputData = InputData(loans, mpi).output_data
+if __name__ == '__main__':
+
+    loans = 'kiva_loans.csv'
+    mpi = 'kiva_mpi_region_locations.csv'
+    result_InputData = InputData(loans, mpi)
