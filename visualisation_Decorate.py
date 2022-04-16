@@ -24,19 +24,19 @@ class PreparationVisualisedData:
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
         if self.input_data['chart_type'] != 'hist':
             self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
-        self.output_file_name_object = 'graph.png'
+        self.output_file_name_object = 'graph'
 
     def __call__(self) -> None:
         if self.input_data['chart_type'] == 'bar':
-            self._bar()
+            self.preparation_bar()
         elif self.input_data['chart_type'] == 'hist':
-            self._hist()
+            self.preparation_hist()
         elif self.input_data['chart_type'] == 'scatter':
-            self._scatter()
+            self.preparation_scatter()
 
         self.func(self.output_file_name_object, self.fig)
 
-    def _bar(self) -> None:
+    def preparation_bar(self) -> None:
         processed_data = processing_Method.bar(pd.read_csv(self.input_data['file']),
                                                self.input_data['column_x'],
                                                self.input_data['column_y'],
@@ -45,12 +45,12 @@ class PreparationVisualisedData:
                     processed_data[self.input_data['column_y']],
                     alpha=self.input_data['alpha'])
 
-    def _hist(self) -> None:
+    def preparation_hist(self) -> None:
         processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
                                                 self.input_data['column_x'])
         self.ax.hist(processed_data, alpha=self.input_data['alpha'])
 
-    def _scatter(self) -> None:
+    def preparation_scatter(self) -> None:
         processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
                                                    self.input_data['column_x'],
                                                    self.input_data['column_y'])
@@ -63,7 +63,7 @@ class PreparationVisualisedData:
 # Отрисовка и сохранение графика в формате .png
 def Save_and_Visualised_Data(output_file_name_object, fig) -> Any:
     plt.show()
-    fig.savefig(output_file_name_object)
+    fig.savefig(f'{output_file_name_object}.png', format='png')
 
 
 Save_and_Visualised_Data()
