@@ -7,7 +7,7 @@ import input_Class
 import processing_Method
 
 jtplot.style(theme='oceans16', context='notebook', ticks=True, grid=False)
-
+#test
 
 class PreparationVisualisedData:
     """Класс-декоратор, выполняющий подготовку и объединение данных
