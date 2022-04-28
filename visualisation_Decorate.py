@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 import pandas as pd
 from jupyterthemes import jtplot
 
-import input_Class
-import processing_Method
+from input_Class import InputData
+from processing_Method import processing_bar, processing_hist, processing_scatter
 
 jtplot.style(theme='oceans16', context='notebook', ticks=True, grid=False)
 
@@ -17,10 +17,9 @@ class PreparationVisualisedData:
 
     def __init__(self, func: Any) -> None:
         self.func: Any = func
-        loans = 'kiva_loans.csv'
-        mpi = 'kiva_mpi_region_locations.csv'
-        self.input_data: dict = input_Class.InputData(loans, mpi)()
-        self.fig, self.ax = plt.subplots(figsize=(15, 8))
+        self.input_data: dict = InputData('kiva_loans.csv',
+                                          'kiva_mpi_region_locations.csv')()
+        self.fig, self.ax = plt.subplots(figsize=(15, 11))
         self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
         if self.input_data['chart_type'] != 'hist':
             self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
@@ -37,33 +36,41 @@ class PreparationVisualisedData:
         self.func(self.output_file_name_object, self.fig)
 
     def preparation_bar(self) -> None:
-        processed_data = processing_Method.bar(pd.read_csv(self.input_data['file']),
-                                               self.input_data['column_x'],
-                                               self.input_data['column_y'],
-                                               self.input_data['agg'])
-        self.ax.bar(processed_data[self.input_data['column_x']],
-                    processed_data[self.input_data['column_y']],
+        processing_data = processing_bar(pd.read_csv(self.input_data['file']),
+                                         self.input_data['column_x'],
+                                         self.input_data['column_y'],
+                                         self.input_data['agg'])
+        self.ax.bar(list(processing_data.index),
+                    processing_data[self.input_data['column_y']],
                     alpha=self.input_data['alpha'])
+        self.ax.tick_params(axis='x', rotation=30)
 
     def preparation_hist(self) -> None:
-        processed_data = processing_Method.hist(pd.read_csv(self.input_data['file']),
-                                                self.input_data['column_x'])
-        self.ax.hist(processed_data, alpha=self.input_data['alpha'])
+        processing_data = processing_hist(pd.read_csv(self.input_data['file']),
+                                          self.input_data['column_x'])
+        self.ax.hist(processing_data, alpha=self.input_data['alpha'])
 
     def preparation_scatter(self) -> None:
-        processed_data = processing_Method.scatter(pd.read_csv(self.input_data['file']),
-                                                   self.input_data['column_x'],
-                                                   self.input_data['column_y'])
-        self.ax.scatter(processed_data[self.input_data['column_x']],
-                        processed_data[self.input_data['column_y']],
+        processing_data = processing_scatter(pd.read_csv(self.input_data['file']),
+                                             self.input_data['column_x'],
+                                             self.input_data['column_y'])
+        self.ax.scatter(processing_data[self.input_data['column_x']],
+                        processing_data[self.input_data['column_y']],
                         alpha=self.input_data['alpha'])
 
 
-@PreparationVisualisedData
-# Отрисовка и сохранение графика в формате .png
-def Save_and_Visualised_Data(output_file_name_object, fig) -> Any:
-    plt.show()
-    fig.savefig(f'{output_file_name_object}.png', format='png')
+while True:
+    print('\nЗапуск программы')
+    print('# для продолжения нажмите любую клавишу')
+    key = input('# выключить - 0 ')
+    if key == '0':
+        break
+    else:
+        @PreparationVisualisedData
+        # Отрисовка и сохранение графика в формате .png
+        def save_and_visualised_data(output_file_name_object, fig):
+            plt.show()
+            fig.savefig(f'{output_file_name_object}.png', format='png')
 
 
-Save_and_Visualised_Data()
+        save_and_visualised_data()

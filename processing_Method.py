@@ -1,36 +1,16 @@
-from typing import Any, Optional
-
-import pandas as pd
-import numpy as np
+from typing import Any
+from numpy import percentile
 
 
-def find_column(data, column: Any) -> bool:
-    # функция, которая проверяет существует ли искомый столбец в заданном датафрейме
-    if column in data.columns:
-        return True
-    else:
-        return False
-
-
-def check_data(series_for_checking: Any) -> bool:
-    # функция устанавливает/преобразовывает тип данных существующего столбца данных в тип float
-    try:
-        series_for_checking.astype(float)
-    except ValueError:
-        print('Предполагается колонка с числовыми значениями')
-        return False
-    return True
-
-
-def dropna(series_for_cleaning) -> Any:
-    # функция удаляет строки с нулевыми значениями
+def clearing(series_for_cleaning: Any) -> Any:
+    # функция удаляет строки с нулевыми значениями c сохранением в датафрейм
     return series_for_cleaning.dropna()
 
 
 def outlier(series_q: Any, column: Any) -> Any:
-    # функция для отсеивания выбросов (правило 3х Сигм)
+    # функция для отсеивания выбросов (правило 3-х Сигм)
     series_q = series_q.reset_index()
-    q75, q25 = np.percentile(series_q[column], [75, 25])
+    q75, q25 = percentile(series_q[column], [75, 25])
     interval_qr = q75 - q25
     max_df = q75 + (1.5 * interval_qr)
     min_df = q25 - (1.5 * interval_qr)
@@ -39,65 +19,37 @@ def outlier(series_q: Any, column: Any) -> Any:
     return data_99_perc
 
 
-def bar(data, col_of_categorias: Any, col_for_agg: Any, agg) -> Optional[Any]:
+def processing_bar(data: Any, col_for_agg: str, colon: str, agg: int) -> Any:
     # функция обрабатывает/преобразовывает данные для создания столбчатой диаграммы
-    # agg - хранит число от 1 до 5, где
-    # 1 - среднее, 2 - медиана, 3 - мода, 4 - количество, 5 - количество уникальных значений
+    # agg - хранит число от 1 до 4, где
+    # 1 - среднее, 2 - медиана, 3 - сумма, 4 - кол-во уникальных значений
     # col_for_agg - название колонки для агрегации
-    # col_of_categorias - колонка с категориями
-    if not find_column(data, col_for_agg):
-        print('Колонка {} не существует'.format(col_for_agg))
-    if not find_column(data, col_of_categorias):
-        print('Колонка {} не существует'.format(col_of_categorias))
-    try:
-        if int(agg) in list(range(0, 6)):
-            df = data[[col_of_categorias, col_for_agg]]
-            if agg < 4:
-                if not check_data(df[col_for_agg]):
-                    return
-            df = dropna(df)
-            if agg == 1:
-                df = df.groupby(col_of_categorias)[col_for_agg].mean()
-            elif agg == 2:
-                df = df.groupby(col_of_categorias)[col_for_agg].median()
-            elif agg == 3:
-                df = df.groupby(col_of_categorias)[col_for_agg].agg(pd.Series.mode)
-            elif agg == 4:
-                df = df.groupby(col_of_categorias)[col_for_agg].count()
-            elif agg == 5:
-                df = df.groupby(col_of_categorias)[col_for_agg].nunique()
-            elif agg == 0:
-                pass
-            return df
-        else:
-            print('Неверный запрос для агрегация')
-    except TypeError:
-        print('Неверный запрос для агрегация')
+    # colon - колонка с категориями
+    df = data[[col_for_agg, colon]]
+    df = clearing(df)
+    if agg == 1:
+        df = df.groupby(col_for_agg).mean()[[colon]]
+    elif agg == 2:
+        df = df.groupby(col_for_agg).median()[[colon]]
+    elif agg == 3:
+        df = df.groupby(col_for_agg).count()[[colon]]
+    elif agg == 4:
+        df = df.groupby(col_for_agg).nunique()[[colon]]
+    return df
 
 
-def hist(data, column: Any) -> Optional[Any]:
+def processing_hist(data: Any, column: str) -> Any:
     # функция обрабатывает/преобразовывает данные для создания гистограммы
-    # data - датафрейм
-    # column - название колонки, запрос в первом классе
-    if not find_column(data, column):
-        print('Колонка {} не существует'.format(column))
-    serie = data[column]
-    if not check_data(serie):
-        print('Неверный формат данных')
-    serie = dropna(serie).reset_index()
-    serie = outlier(serie, column)
-    return serie[column]
+    series_data = data[column]
+    series_data = clearing(series_data).reset_index()
+    series_data = outlier(series_data, column)
+    return series_data[column]
 
 
-def scatter(data, column_1: Any, column_2: Any) -> Optional[Any]:
+def processing_scatter(data: Any, column_1: str, column_2: str) -> Any:
     # функция обрабатывает/преобразовывает данные для создания точечной диаграммы
-    # column_outl - колонка для отсеивания выбросов
-    if not find_column(data, column_1):
-        print('Колонка {} не существует'.format(column_1))
-    if not find_column(data, column_2):
-        print('Колонка {} не существует'.format(column_2))
     df = data[[column_1, column_2]]
-    if not check_data(df[column_1]) or not check_data(df[column_2]):
-        return
-    df = dropna(df)
+    df = clearing(df)
+    df = outlier(df, column_1)
+    df = outlier(df, column_2)
     return df
