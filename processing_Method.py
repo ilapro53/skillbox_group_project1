@@ -19,31 +19,30 @@ def outlier(series_q: Any, column: Any) -> Any:
     return data_99_perc
 
 
-def processing_bar(data: Any, col_for_agg: str, colon: str, agg: int) -> Any:
+def processing_bar(data: Any, agg: int) -> Any:
     # функция обрабатывает/преобразовывает данные для создания столбчатой диаграммы
     # agg - хранит число от 1 до 4, где
-    # 1 - среднее, 2 - медиана, 3 - сумма, 4 - кол-во уникальных значений
+    # 1 - среднее, 2 - медиана, 3 - дисперсия, 4 - кол-во уникальных значений
     # col_for_agg - название колонки для агрегации
     # colon - колонка с категориями
-    df = data[[col_for_agg, colon]]
-    df = clearing(df)
+    df = clearing(data)
     if agg == 1:
-        df = df.groupby(col_for_agg).mean()[[colon]]
+        df = df.agg('mean')
     elif agg == 2:
-        df = df.groupby(col_for_agg).median()[[colon]]
+        df = df.agg('median')
     elif agg == 3:
-        df = df.groupby(col_for_agg).count()[[colon]]
+        df = df.agg('var')
     elif agg == 4:
-        df = df.groupby(col_for_agg).nunique()[[colon]]
+        df = df.agg('nunique')
     return df
 
 
 def processing_hist(data: Any, column: str) -> Any:
     # функция обрабатывает/преобразовывает данные для создания гистограммы
-    series_data = data[column]
-    series_data = clearing(series_data).reset_index()
-    series_data = outlier(series_data, column)
-    return series_data[column]
+    series = data[column]
+    series = clearing(series).reset_index()
+    series = outlier(series, column)
+    return series[column]
 
 
 def processing_scatter(data: Any, column_1: str, column_2: str) -> Any:

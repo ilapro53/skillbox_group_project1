@@ -86,7 +86,7 @@ class InputData:
             reply = int(input(
                 '\nВыберете агрегирующую функцию\n'
                 '\t1 - среднее, 2 - медиана,\n'
-                '\t3 - сумма, 4 - кол-во уникальных значений\n'
+                '\t3 - дисперсия, 4 - кол-во уникальных значений\n'
                 'Номер агрегирующей функции: '))
             if reply in [1, 2, 3, 4]:
                 return reply
@@ -106,14 +106,14 @@ class InputData:
             if chart_type != 'bar':
                 if (cols_dict[name] == 'float64') or (cols_dict[name] == 'int64'):
                     print('\t', name)
-            else:
+            elif len(df[name].unique()) < 120:
                 print('\t', name)
 
         # Ввод с проверкой существования столбцов
-        if output_data['chart_type'] != 'hist':
+        if output_data['chart_type'] == 'scatter':
             for ax in ('x', 'y'):
                 output_data[f'column_{ax}'] = self.__input_axis(cols_dict, ax)
-        else:
+        elif output_data['chart_type'] == 'hist':
             output_data[f'column_x'] = self.__input_axis(cols_dict, 'x')
 
         # Добавление агрегирующей функции (если bar)

@@ -19,10 +19,11 @@ class PreparationVisualisedData:
         self.func: Any = func
         self.input_data: dict = InputData('kiva_loans.csv',
                                           'kiva_mpi_region_locations.csv')()
-        self.fig, self.ax = plt.subplots(figsize=(15, 11))
-        self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
-        if self.input_data['chart_type'] != 'hist':
-            self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
+        self.fig, self.ax = plt.subplots(figsize=(20, 11))
+        if self.input_data['chart_type'] != 'bar':
+            self.ax.set_xlabel(self.input_data['column_x'], fontsize=16)
+            if self.input_data['chart_type'] == 'scatter':
+                self.ax.set_ylabel(self.input_data['column_y'], fontsize=16)
         self.output_file_name_object = 'graph'
 
     def __call__(self) -> None:
@@ -37,11 +38,8 @@ class PreparationVisualisedData:
 
     def preparation_bar(self) -> None:
         processing_data = processing_bar(pd.read_csv(self.input_data['file']),
-                                         self.input_data['column_x'],
-                                         self.input_data['column_y'],
                                          self.input_data['agg'])
-        self.ax.bar(list(processing_data.index),
-                    processing_data[self.input_data['column_y']],
+        self.ax.bar(list(processing_data.index), processing_data,
                     alpha=self.input_data['alpha'])
         self.ax.tick_params(axis='x', rotation=30)
 
