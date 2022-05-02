@@ -36,15 +36,14 @@ class InputData:
     def _clos_list(self):
         cols_dict = dict(self.data['dataframe'])
 
-        cols = cols_dict
-        # cols = []
-        # if self.data['chart_type'] != 'bar':
-        #     for name in cols_dict:
-        #         if self.data['chart_type'] != 'bar':
-        #             if cols_dict[name].dtype in ['float64', 'int64']:
-        #                 cols.append(name)
-        #         elif len(self.data['dataframe'][name].unique()) < 120:
-        #             cols.append(name)
+        # cols = cols_dict
+        cols = []
+        for name in cols_dict:
+            if self.data['chart_type'] != 'bar':
+                if cols_dict[name].dtype in ['float64', 'int64']:
+                    cols.append(name)
+            elif len(self.data['dataframe'][name].unique()) < 120:
+                cols.append(name)
 
         return cols
 
