@@ -1,4 +1,5 @@
 from typing import Any
+
 from numpy import percentile
 
 
@@ -25,15 +26,7 @@ def processing_bar(data: Any, agg: int) -> Any:
     # 1 - среднее, 2 - медиана, 3 - дисперсия, 4 - кол-во уникальных значений
     # col_for_agg - название колонки для агрегации
     # colon - колонка с категориями
-    df = clearing(data)
-    if agg == 1:
-        df = df.agg('mean')
-    elif agg == 2:
-        df = df.agg('median')
-    elif agg == 3:
-        df = df.agg('var')
-    elif agg == 4:
-        df = df.agg('nunique')
+    df = clearing(data).agg(agg)
     return df
 
 
@@ -47,6 +40,7 @@ def processing_hist(data: Any, column: str) -> Any:
 
 def processing_scatter(data: Any, column_1: str, column_2: str) -> Any:
     # функция обрабатывает/преобразовывает данные для создания точечной диаграммы
+    # column_outl - колонка для отсеивания выбросов
     df = data[[column_1, column_2]]
     df = clearing(df)
     df = outlier(df, column_1)

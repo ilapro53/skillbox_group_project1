@@ -1,126 +1,230 @@
 import os
+from typing import List, Iterable, Dict
+
 import pandas as pd
+
+import tg_keyboards
+from main import bot
+from visualisation_Decorate import save_and_visualised_data
 
 
 class InputData:
-    """Класс, реализующий ввод от пользователя"""
+    agg_list: dict[str, str] = {
+        'среднее': 'mean',
+        'медиана': 'median',
+        'дисперсия': 'var',
+        'количество уникальных значений': 'nunique'
+    }
 
     def __init__(self, loans_file: str, mpi_file: str) -> None:
+        self.bot_path = []
+        self.data = {'axis': {}}
+        self.axis_list = None
+
         # Проверяем наличие файла loans
         if os.path.exists(loans_file):
             self.loans_path = loans_file
         else:
             raise FileExistsError('Файла {} не найдено'.format(loans_file))
+
         # Проверяем наличие файла mpi
         if os.path.exists(mpi_file):
             self.mpi_path = mpi_file
         else:
             raise FileExistsError('Файла {} не найдено'.format(mpi_file))
 
-    def __call__(self) -> dict:
-        # Спрашиваем тип графика
-        print(
-            "\t1 - Столбчатая диаграмма\n"
-            "\t2 - Гистограмма\n"
-            "\t3 - Точечный график"
-        )
-        while True:
-            reply = input('Какой график построить? ').replace(' ', '')
-            # Проверяем корректность ответа
-            if reply in ('1', '2', '3'):
-                break
-            else:
-                print('Неверный ввод. Пожалуйста введите номер графика, '
-                      'который нужно построить')
-        if '1' == reply:
-            return self.__plot('bar')
-        elif '2' == reply:
-            return self.__plot('hist')
-        elif '3' == reply:
-            return self.__plot('scatter')
+    def _clos_list(self):
+        cols_dict = dict(self.data['dataframe'])
 
-    def __input_file(self) -> str:
-        print('\nФайлы с данными:\n'
-              '\t1 - {}'.format(self.loans_path),
-              '\t2 - {}'.format(self.mpi_path), sep='\n')
-        while True:
-            reply = input('Выберете файл: ').replace(' ', '')
-            if reply == '1':
-                return self.loans_path
-            elif reply == '2':
-                return self.mpi_path
-            else:
-                print('Неверный ввод. Пожалуйста введите номер файла, '
-                      'из которого нужно взять данные')
+        cols = cols_dict
+        # cols = []
+        # if self.data['chart_type'] != 'bar':
+        #     for name in cols_dict:
+        #         if self.data['chart_type'] != 'bar':
+        #             if cols_dict[name].dtype in ['float64', 'int64']:
+        #                 cols.append(name)
+        #         elif len(self.data['dataframe'][name].unique()) < 120:
+        #             cols.append(name)
 
-    @staticmethod
-    def __input_alpha() -> float:
-        print('\nПрозрачность графика в процентах\n'
-              '\t0 - не прозрачный\n'
-              '\t100 - невидимый')
-        while True:
-            reply = input('Введите прозрачность: ').replace(' ', '')
-            try:
-                reply = float(reply) / 100
-                if reply > 1 or reply < 0:
-                    print('Неверное значение. Прозрачность не '
-                          'может быть больше 100 или меньше 0.')
+        return cols
+
+    def build(self, msg):
+
+        for name, value in self.data['axis'].items():
+            self.data[f'column_{name}'] = value
+
+        del (self.data['axis'])
+
+        save_and_visualised_data(self.data)
+
+        with open('graph.png', 'rb') as photo:
+            bot.send_photo(msg.from_user.id,
+                           photo,
+                           caption='Ваш график',
+                           reply_markup=tg_keyboards.home_keyboard())
+
+        self.bot_path = []
+
+    def page_home(self, msg):
+        if msg.text == 'Новый график':
+            self.bot_path = ['new_plot']
+            bot.send_message(msg.from_user.id,
+                             f'Хорошо, новый график. '
+                             f'Выберите тип графика',
+                             reply_markup=tg_keyboards.choose(
+                                     (
+                                         'Столбчатая диаграмма',
+                                         'Гистограмма',
+                                         'Точечный график'
+                                     )
+                                 )
+                             )
+
+        else:
+            bot.send_message(msg.from_user.id,
+                             'Неверная команда. Нажмите "Новый график", '
+                             'чтобы начать строить график',
+                             reply_markup=tg_keyboards.home_keyboard())
+
+    def page_new_plot(self, msg):
+        if msg.text == 'Столбчатая диаграмма':
+            self.bot_path = ['new_plot', 'plot']
+            self.data['chart_type'] = 'bar'
+            bot.send_message(msg.from_user.id,
+                             f'Итак, строим столбчатую диаграмму. Выберите '
+                             f'файл с данными',
+                             reply_markup=tg_keyboards.choose_file_keyboard(self))
+
+        elif msg.text == 'Гистограмма':
+            self.bot_path = ['new_plot', 'plot']
+            self.data['chart_type'] = 'hist'
+            bot.send_message(msg.from_user.id,
+                             f'Итак, строим гистограмму. Выберите '
+                             f'файл с данными',
+                             reply_markup=tg_keyboards.choose_file_keyboard(self))
+
+        elif msg.text == 'Точечный график':
+            self.bot_path = ['new_plot', 'plot']
+            self.data['chart_type'] = 'scatter'
+            bot.send_message(msg.from_user.id,
+                             f'Итак, строим точечный график. Выберите '
+                             f'файл с данными',
+                             reply_markup=tg_keyboards.choose_file_keyboard(self))
+
+        else:
+            bot.send_message(msg.from_user.id,
+                             'Неверная команда. Выберите один из предложенных '
+                             'графиков',
+                             reply_markup=tg_keyboards.choose(
+                                     (
+                                         'Столбчатая диаграмма',
+                                         'Гистограмма',
+                                         'Точечный график'
+                                     )
+                                 )
+                             )
+
+    def page_input_file(self, msg):
+        if msg.text in (self.mpi_path,
+                        self.loans_path):
+
+            self.bot_path.append('file')
+            self.data['file'] = msg.text
+            bot.send_message(msg.from_user.id,
+                             f'Загрузка данных из файла "{msg.text}" ...')
+
+            if 'file' not in self.data or \
+                    'dataframe' not in self.data:
+                self.data['file'] = msg.text
+                self.data['dataframe'] = pd.read_csv(msg.text)
+
+
+            if self.data['chart_type'] in ('bar', 'scatter'):
+                self.axis_list = ['x', 'y']
+            else:
+                self.axis_list = ['x']
+
+            cols = self._clos_list()
+
+            bot.send_message(msg.from_user.id,
+                             f'Выберите колонку X из файла',
+                             reply_markup=tg_keyboards.choose(cols))
+
+        else:
+            bot.send_message(msg.from_user.id,
+                             'Неверная команда. Выберите файл с данными',
+                             reply_markup=tg_keyboards.choose_file_keyboard(self))
+
+    def page_input_axis(self, msg):
+
+        cols = self._clos_list()
+
+        if msg.text in cols:
+            ax_name = self.axis_list[
+                len(self.data['axis'])
+            ]
+
+            self.data['axis'].update({ax_name: msg.text})
+
+            if len(self.data['axis']) != len(self.axis_list):
+                ax_name = self.axis_list[
+                    len(self.data['axis'])
+                ]
+                bot.send_message(msg.from_user.id,
+                                 f'Выберите колонку {ax_name.upper()} из файла',
+                                 reply_markup=tg_keyboards.choose(cols))
+
+            else:
+                self.bot_path.append('axis')
+                bot.send_message(msg.from_user.id,
+                                 f'Введите прозрачность графика в процентах (от 0 до 100)\n'
+                                 '0 - не прозрачный\n'
+                                 '100 - невидимый\n')
+
+        else:
+            ax_name = self.axis_list[
+                len(self.data['axis'])
+            ]
+            bot.send_message(msg.from_user.id,
+                             f'Неверная команда. Выберите столбец данных для оси {ax_name}',
+                             reply_markup=tg_keyboards.choose(cols))
+
+    def page_input_alpha(self, msg):
+        try:
+            answ = float(msg.text) / 100
+
+            if answ > 1 or answ < 0:
+                bot.send_message(msg.from_user.id,
+                                 'Неверное значение. Прозрачность не '
+                                 'может быть больше 100 или меньше 0')
+            else:
+                self.data['alpha'] = answ
+
+                if self.data['chart_type'] == 'bar':
+                    self.bot_path.append('agg')
+                    bot.send_message(msg.from_user.id,
+                                     f'Выберете агрегирующую функцию',
+                                     reply_markup=tg_keyboards.choose(InputData.agg_list.keys()))
+
                 else:
-                    return reply
-            except ValueError:
-                print('Неверный ввод. Пожалуйста введите номер файла, '
-                      'из которого нужно взять данные')
+                    self.bot_path.extend(['agg', 'build'])
+                    self.build(msg)
 
-    @staticmethod
-    def __input_axis(cols_dict: dict, axis: str) -> str:
-        while True:
-            reply = input('Выберете столбец для оси {}: '.format(axis.upper()))
-            if reply in cols_dict:
-                return reply
-            else:
-                print('Такого столбца нет, введите столбец из списка выше')
+        except ValueError:
+            bot.send_message(msg.from_user.id,
+                             f'Неверное значение. Введите прозрачность числом')
 
-    @staticmethod
-    def __agg() -> int:
-        while True:
-            reply = int(input(
-                '\nВыберете агрегирующую функцию\n'
-                '\t1 - среднее, 2 - медиана,\n'
-                '\t3 - дисперсия, 4 - кол-во уникальных значений\n'
-                'Номер агрегирующей функции: '))
-            if reply in [1, 2, 3, 4]:
-                return reply
-            else:
-                print('Такой функции нет')
+    def page_input_agg(self, msg):
 
-    def __plot(self, chart_type: str) -> dict:
-        """Метод для ввода информации для соответствующего графика"""
-        output_data = {'chart_type': chart_type, 'file': self.__input_file()}
+        if msg.text in InputData.agg_list:
+            self.data['agg'] = InputData.agg_list[msg.text]
 
-        df = pd.read_csv(output_data['file'])
-        cols_dict = dict(df.dtypes)
+            self.bot_path.append('build')
+            bot.send_message(msg.from_user.id,
+                             f'Секунду. Строим график...')
 
-        # Вывод подходящих имен столбцов
-        print('\nСтолбцы:')
-        for name in cols_dict:
-            if chart_type != 'bar':
-                if (cols_dict[name] == 'float64') or (cols_dict[name] == 'int64'):
-                    print('\t', name)
-            elif len(df[name].unique()) < 120:
-                print('\t', name)
+            self.build(msg)
 
-        # Ввод с проверкой существования столбцов
-        if output_data['chart_type'] == 'scatter':
-            for ax in ('x', 'y'):
-                output_data[f'column_{ax}'] = self.__input_axis(cols_dict, ax)
-        elif output_data['chart_type'] == 'hist':
-            output_data[f'column_x'] = self.__input_axis(cols_dict, 'x')
-
-        # Добавление агрегирующей функции (если bar)
-        if output_data['chart_type'] == 'bar':
-            output_data['agg'] = self.__agg()
-
-        # Добавление прозрачности графика
-        output_data['alpha'] = self.__input_alpha()
-
-        return output_data
+        else:
+            bot.send_message(msg.from_user.id,
+                             f'Неверное значение. Выберите агрегирующую функцию')
