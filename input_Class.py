@@ -9,7 +9,7 @@ from visualisation_Decorate import save_and_visualised_data
 
 
 class InputData:
-    agg_list: dict[str, str] = {
+    agg_list: dict[str: str] = {
         'среднее': 'mean',
         'медиана': 'median',
         'дисперсия': 'var',
@@ -39,21 +39,22 @@ class InputData:
         # cols = cols_dict
         cols = []
         for name in cols_dict:
-            if self.data['chart_type'] != 'bar':
-                if cols_dict[name].dtype in ['float64', 'int64']:
-                    cols.append(name)
-            elif len(self.data['dataframe'][name].unique()) < 120:
+            if cols_dict[name].dtype in ['float64', 'int64'] and name not in self.data['axis'].values():
                 cols.append(name)
 
         return cols
 
     def build(self, msg):
 
+        self.data['dataframe'] = self.data['dataframe'][self.data['axis'].values()]
+
         for name, value in self.data['axis'].items():
             self.data[f'column_{name}'] = value
 
-        del (self.data['axis'])
+        del(self.data['axis'])
 
+        bot.send_message(msg.from_user.id,
+                         f'Секунду. Строим график...')
         save_and_visualised_data(self.data)
 
         with open('graph.png', 'rb') as photo:
@@ -62,6 +63,7 @@ class InputData:
                            caption='Ваш график',
                            reply_markup=tg_keyboards.home_keyboard())
 
+        self.data = {'axis': {}}
         self.bot_path = []
 
     def page_home(self, msg):
@@ -138,16 +140,30 @@ class InputData:
                 self.data['dataframe'] = pd.read_csv(msg.text)
 
 
-            if self.data['chart_type'] in ('bar', 'scatter'):
+            if self.data['chart_type'] == 'scatter':
                 self.axis_list = ['x', 'y']
-            else:
+            elif self.data['chart_type'] == 'hist':
                 self.axis_list = ['x']
+            else:
+                self.axis_list = []
+                self.bot_path.append('axis')
+                bot.send_message(msg.from_user.id,
+                                 f'Введите прозрачность графика в процентах (от 0 до 100)\n'
+                                 '100 - не прозрачный\n'
+                                 '0 - невидимый\n')
 
-            cols = self._clos_list()
 
-            bot.send_message(msg.from_user.id,
-                             f'Выберите колонку X из файла',
-                             reply_markup=tg_keyboards.choose(cols))
+
+            if self.data['chart_type'] != 'bar':
+                cols = self._clos_list()
+                bot.send_message(msg.from_user.id,
+                                 f'Выберите колонку X из файла',
+                                 reply_markup=tg_keyboards.choose(cols))
+
+            else:
+                for ax in self._clos_list():
+                    if ax != 'id':
+                        self.data['axis'].update({ax: ax})
 
         else:
             bot.send_message(msg.from_user.id,
@@ -164,6 +180,7 @@ class InputData:
             ]
 
             self.data['axis'].update({ax_name: msg.text})
+            cols = self._clos_list()
 
             if len(self.data['axis']) != len(self.axis_list):
                 ax_name = self.axis_list[
@@ -177,8 +194,8 @@ class InputData:
                 self.bot_path.append('axis')
                 bot.send_message(msg.from_user.id,
                                  f'Введите прозрачность графика в процентах (от 0 до 100)\n'
-                                 '0 - не прозрачный\n'
-                                 '100 - невидимый\n')
+                                 '100 - не прозрачный\n'
+                                 '0 - невидимый\n')
 
         else:
             ax_name = self.axis_list[
@@ -219,9 +236,6 @@ class InputData:
             self.data['agg'] = InputData.agg_list[msg.text]
 
             self.bot_path.append('build')
-            bot.send_message(msg.from_user.id,
-                             f'Секунду. Строим график...')
-
             self.build(msg)
 
         else:

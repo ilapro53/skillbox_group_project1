@@ -20,12 +20,7 @@ def simple_massage_handler(message):
 
     user_input = sessions[message.from_user.id]
 
-    if message.text == "id":  # если запрос id Telegram аккаунта
-        bot.send_message(message.from_user.id,
-                         f'Ваш id в Telegram: {str(message.from_user.id)}',
-                         reply_markup=tg_keyboards.home_keyboard())
-
-    elif message.text == '/start':
+    if message.text == '/start':
         sessions[message.from_user.id] = InputData(
             loans_file='kiva_loans.csv',
             mpi_file='kiva_mpi_region_locations.csv'
@@ -55,7 +50,7 @@ def simple_massage_handler(message):
         user_input.page_input_agg(message)
 
     else:
-        raise ValueError('Неожиданный путь')
+        raise ValueError(f'Неожиданный путь {user_input.bot_path}')
 
 
 def start_bot():

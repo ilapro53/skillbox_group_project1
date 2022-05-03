@@ -44,19 +44,18 @@ class PreparationVisualisedData:
             self.func(self.output_file_name_object, self.fig)
 
         def preparation_bar(self) -> None:
-            processing_data = processing_bar(pd.read_csv(self.input_data['file']),
+            processing_data = processing_bar(self.input_data['dataframe'],
                                              self.input_data['agg'])
             self.ax.bar(list(processing_data.index), processing_data,
                                    alpha=self.input_data['alpha'])
-            self.ax.tick_params(axis='x', rotation=30)
 
         def preparation_hist(self) -> None:
-            processing_data = processing_hist(pd.read_csv(self.input_data['file']),
+            processing_data = processing_hist(self.input_data['dataframe'],
                                               self.input_data['column_x'])
             self.ax.hist(processing_data, alpha=self.input_data['alpha'])
 
         def preparation_scatter(self) -> None:
-            processing_data = processing_scatter(pd.read_csv(self.input_data['file']),
+            processing_data = processing_scatter(self.input_data['dataframe'],
                                                  self.input_data['column_x'],
                                                  self.input_data['column_y'])
             self.ax.scatter(processing_data[self.input_data['column_x']],
