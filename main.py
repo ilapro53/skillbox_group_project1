@@ -1,4 +1,5 @@
 from telebot import TeleBot
+from typing import Any
 
 bot = TeleBot('5389116596:AAFw_f7dqwbEW6YDMVNzTuZhSw3e5JmwcU8')
 # Бот: @skillbox_project_testbot
@@ -6,7 +7,10 @@ bot = TeleBot('5389116596:AAFw_f7dqwbEW6YDMVNzTuZhSw3e5JmwcU8')
 import tg_keyboards
 from input_Class import InputData
 
-sessions = {}
+# Каждый аккаунт Telegram имеет свой класс InputData,
+# чтобы разные пользователи могли пользоваться ботом
+# одновременно
+sessions: dict[Any: InputData] = {}
 
 
 @bot.message_handler(content_types=['text', 'document', 'audio'])
