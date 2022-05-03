@@ -7,6 +7,9 @@ from visualisation_Decorate import save_and_visualised_data
 
 
 class InputData:
+    # ключом является название агрегирующей функции
+    # значением является аргумент метода .agg() объекта класса pd.DataFrame() т.е
+    # агрегирующей функции.
     agg_list: dict[str: str] = {
         'среднее': 'mean',
         'медиана': 'median',
@@ -16,7 +19,7 @@ class InputData:
 
     def __init__(self, loans_file: str, mpi_file: str) -> None:
         self.bot_path = []
-        self.data = {'axis': {}}
+        self.data = {'axis': {}} # Здесь собираются все данные
         self.axis_list = None
 
         # Проверяем наличие файла loans
@@ -32,6 +35,8 @@ class InputData:
             raise FileExistsError('Файла {} не найдено'.format(mpi_file))
 
     def _clos_list(self):
+        # Метод получения колонок данных, доступных для выбора
+        # из датафрейма self.data['dataframe']
         cols_dict = dict(self.data['dataframe'])
         cols = []
         for name in cols_dict:
@@ -40,13 +45,15 @@ class InputData:
         return cols
 
     def build(self, msg):
+        # Метод, вызываемый после сбора всех данных.
+        # Он запускает визуализацию данных и некоторые
         self.data['dataframe'] = self.data['dataframe'][self.data['axis'].values()]
         for name, value in self.data['axis'].items():
             self.data[f'column_{name}'] = value
         del (self.data['axis'])
         bot.send_message(msg.from_user.id,
                          f'Секунду. Строим график...')
-        save_and_visualised_data(self.data)
+        save_and_visualised_data(self.data) # <- Запуск визуализации
         with open('graph.png', 'rb') as photo:
             bot.send_photo(msg.from_user.id,
                            photo,
