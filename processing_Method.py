@@ -26,7 +26,6 @@ def processing_bar(data: Any, agg: int) -> Any:
     # 1 - среднее, 2 - медиана, 3 - дисперсия, 4 - кол-во уникальных значений
     # col_for_agg - название колонки для агрегации
     # colon - колонка с категориями
-
     df = clearing(data).agg(agg)
     return df
 

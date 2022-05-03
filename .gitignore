@@ -1,5 +1,7 @@
 /kiva_mpi_region_locations.csv
 /kiva_loans.csv
+/loan_theme_ids.csv
+/loan_themes_by_region.csv
 /venv
 /.idea
 /__pycache__
