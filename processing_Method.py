@@ -9,7 +9,7 @@ def clearing(series_for_cleaning: Any) -> Any:
 
 
 def outlier(series_q: Any, column: Any) -> Any:
-    # функция для отсеивания выбросов (правило 3-х Сигм)
+    # функция для отсеивания выбросов
     series_q = series_q.reset_index()
     q75, q25 = percentile(series_q[column], [75, 25])
     interval_qr = q75 - q25
